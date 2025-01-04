@@ -1,92 +1,65 @@
 # Little Lemon API 🍋
 
-Welcome to the Little Lemon API project! This Django-based API provides a robust backend system for managing restaurant operations, including menu items, orders, user roles, and more. The API is designed to support the development of web and mobile applications for the Little Lemon restaurant.
 
----
+## Project Description
 
-## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Features](#features)
-3. [Usage](#usage)
-4. [API Endpoints](#api-endpoints)
-5. [Authentication & Authorization](#authentication--authorization)
-6. [Throttling](#throttling)
+This project involves creating a fully functional API for the Little Lemon restaurant. The API will allow client application developers to build web and mobile applications that can interact with the restaurant's data. The API will support various user roles, including customers, managers, and delivery crew, each with different levels of access and permissions.
 
+### Key Features
 
----
-
-## Project Overview
-
-The Little Lemon API provides endpoints to:
-- Manage menu items
-- Handle user roles (Manager, Delivery Crew, Customers)
-- Process customer orders
-- Assign delivery crew to orders
-- Filter, sort, and paginate results
-
-It adheres to RESTful principles and is built using **Django** and **Django REST Framework (DRF)**.
-
----
-
-## Features
-- **User Authentication:** Token-based authentication using Djoser.
-- **Role Management:** Distinct access for Managers, Delivery Crew, and Customers.
-- **Error Handling:** Appropriate HTTP status codes and error messages for all operations.
-- **Filtering, Sorting, and Pagination:** Enhanced search capabilities for menu items and orders.
-- **Throttling:** Rate limits for authenticated and unauthenticated users.
-
-
-
-## Usage
-
-Use an API client like **Postman** or **cURL** to interact with the API. Alternatively, integrate it with a frontend application.
-
----
+- **User Registration and Token Generation**: Users can register, log in, and obtain access tokens for authenticated API requests.
+- **Menu Management**: Managers can add, update, and delete menu items. Customers and delivery crew can view menu items.
+- **User Group Management**: Managers can assign users to the manager or delivery crew groups.
+- **Cart Management**: Customers can add items to their cart, view their cart, and delete items from their cart.
+- **Order Management**: Customers can place orders, view their orders, and managers can update order status and assign delivery crew.
+- **Filtering, Pagination, and Sorting**: The API supports filtering, pagination, and sorting for menu items and orders.
+- **Throttling**: The API implements throttling to limit the number of requests from authenticated and unauthenticated users.
 
 ## API Endpoints
 
-### User Authentication
-- `POST /api/users`: Create a new user.
-- `POST /token/login`: Generate an access token.
-- `GET /api/users/me`: View current user details.
+### User Registration and Token Generation
 
-### Menu Management
-- **Customers & Delivery Crew:**
-  - `GET /api/menu-items`: View all menu items.
-  - `GET /api/menu-items/{menuItem}`: View details of a specific menu item.
-- **Managers:**
-  - `POST /api/menu-items`: Add a menu item.
-  - `PUT /api/menu-items/{menuItem}`, `PATCH /api/menu-items/{menuItem}`: Update a menu item.
-  - `DELETE /api/menu-items/{menuItem}`: Delete a menu item.
+- **POST /api/users**: Creates a new user.
+- **GET /api/users/users/me/**: Displays the current user.
+- **POST /token/login/**: Generates access tokens.
+
+### Menu Items
+
+- **GET /api/menu-items**: Lists all menu items (accessible by customers and delivery crew).
+- **POST /api/menu-items**: Creates a new menu item (accessible by managers).
+- **GET /api/menu-items/{menuItem}**: Lists a single menu item.
+- **PUT, PATCH /api/menu-items/{menuItem}**: Updates a single menu item (accessible by managers).
+- **DELETE /api/menu-items/{menuItem}**: Deletes a menu item (accessible by managers).
+
+### User Group Management
+
+- **GET /api/groups/manager/users**: Returns all managers.
+- **POST /api/groups/manager/users**: Assigns a user to the manager group.
+- **DELETE /api/groups/manager/users/{userId}**: Removes a user from the manager group.
+- **GET /api/groups/delivery-crew/users**: Returns all delivery crew.
+- **POST /api/groups/delivery-crew/users**: Assigns a user to the delivery crew group.
+- **DELETE /api/groups/delivery-crew/users/{userId}**: Removes a user from the delivery crew group.
+
+### Cart Management
+
+- **GET /api/cart/menu-items**: Returns current items in the cart for the current user.
+- **POST /api/cart/menu-items**: Adds a menu item to the cart.
+- **DELETE /api/cart/menu-items**: Deletes all menu items in the cart for the current user.
 
 ### Order Management
-- **Customers:**
-  - `GET /api/orders`: View customer’s orders.
-  - `POST /api/orders`: Place an order.
-- **Managers:**
-  - `GET /api/orders`: View all orders.
-  - `DELETE /api/orders/{orderId}`: Delete an order.
-- **Delivery Crew:**
-  - `GET /api/orders`: View assigned orders.
-  - `PATCH /api/orders/{orderId}`: Update order delivery status.
 
----
+- **GET /api/orders**: Returns all orders for the current user (customers) or all orders (managers).
+- **POST /api/orders**: Creates a new order for the current user.
+- **GET /api/orders/{orderId}**: Returns all items for a specific order.
+- **PUT, PATCH /api/orders/{orderId}**: Updates an order (accessible by managers and delivery crew).
+- **DELETE /api/orders/{orderId}**: Deletes an order (accessible by managers).
 
-## Authentication & Authorization
+## Installation and Setup
 
-This project uses **Djoser** for authentication. Only authorized users can access certain endpoints:
-- **Manager Role:** Full control over menu items and order assignments.
-- **Delivery Crew Role:** Access and update assigned orders.
-- **Customer Role:** Access menu items and place orders.
-
----
-
-## Throttling
-
-The API applies rate limits to prevent abuse:
-
-
----
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/yourusername/little-lemon-api.git
+   cd little-lemon-api
 
 
 ## Contact
