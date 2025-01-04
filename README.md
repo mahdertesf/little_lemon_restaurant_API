@@ -54,12 +54,6 @@ This project involves creating a fully functional API for the Little Lemon resta
 - **PUT, PATCH /api/orders/{orderId}**: Updates an order (accessible by managers and delivery crew).
 - **DELETE /api/orders/{orderId}**: Deletes an order (accessible by managers).
 
-## Installation and Setup
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/little-lemon-api.git
-   cd little-lemon-api
 
 
 ## Contact
