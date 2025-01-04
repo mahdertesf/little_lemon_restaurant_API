@@ -7,13 +7,11 @@ Welcome to the Little Lemon API project! This Django-based API provides a robust
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Features](#features)
-3. [Installation](#installation)
-4. [Usage](#usage)
-5. [API Endpoints](#api-endpoints)
-6. [Authentication & Authorization](#authentication--authorization)
-7. [Throttling](#throttling)
-8. [Contributing](#contributing)
-9. [License](#license)
+3. [Usage](#usage)
+4. [API Endpoints](#api-endpoints)
+5. [Authentication & Authorization](#authentication--authorization)
+6. [Throttling](#throttling)
+
 
 ---
 
@@ -37,45 +35,7 @@ It adheres to RESTful principles and is built using **Django** and **Django REST
 - **Filtering, Sorting, and Pagination:** Enhanced search capabilities for menu items and orders.
 - **Throttling:** Rate limits for authenticated and unauthenticated users.
 
----
 
-## Installation
-
-### Prerequisites
-- Python 3.9 or later
-- pip
-- pipenv
-
-### Steps
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/username/little-lemon-api.git
-    cd little-lemon-api
-    ```
-
-2. Set up a virtual environment:
-    ```bash
-    pip install pipenv
-    pipenv install
-    pipenv shell
-    ```
-
-3. Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4. Apply migrations:
-    ```bash
-    python manage.py migrate
-    ```
-
-5. Start the server:
-    ```bash
-    python manage.py runserver
-    ```
-
----
 
 ## Usage
 
