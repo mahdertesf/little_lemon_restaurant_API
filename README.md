@@ -84,8 +84,7 @@ This project uses **Djoser** for authentication. Only authorized users can acces
 ## Throttling
 
 The API applies rate limits to prevent abuse:
-- **Authenticated Users:** 100 requests per minute.
-- **Unauthenticated Users:** 10 requests per minute.
+
 
 ---
 
