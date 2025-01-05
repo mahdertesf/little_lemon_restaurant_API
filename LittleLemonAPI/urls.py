@@ -6,4 +6,5 @@ urlpatterns = [
     path('groups/manager/users/',views.managers,name='managers'),
     path('groups/manager/users/<int:pk>/',views.managerdetail,name='managers'),
     path('cart/menu-items/', views.cartitems, name='cart-items'),
+    path('orders/',views.orders,name='orders'),
 ]

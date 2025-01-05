@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Category, MenuItems, Cart, Order, OrderItem 
 from django.contrib.auth.models import User, Group
+from django.utils import timezone
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,14 +41,23 @@ class CartSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 class OrderSerializer(serializers.ModelSerializer):
+    delivery_id=serializers.IntegerField(write_only=True)
+    
     class Meta:
         model=Order
-        fields='__all__'
-    
+        fields=['user','delivery_crew','status','total','date']
+        read_only_fields=['user','total','date']
+    def create(self,validated_data):
+        request=self.context.get('request')
+        if request and hassattr(request,'user'):
+            validated_data['user']=request.user
+        validated_data['total']=Cart.Objects.filter(user=request.user).aggregate(total=models.Sum('price'))['total']
+        validated_data['date']=timezone.now().date()
+        
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model=OrderItem
-        fields='__all__'
+        fields=['order','menuitem','quantity','unit_price','price']
     
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
