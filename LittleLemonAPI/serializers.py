@@ -23,9 +23,10 @@ class CartSerializer(serializers.ModelSerializer):
     menuitem=MenuItemSerializer(read_only=True)
     menuitem_id=serializers.IntegerField(write_only=True)
 
+
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'menuitem', 'quantity', 'unit_price', 'price', 'menuitem_id']
+        fields = ['id', 'user', 'menuitem', 'quantity', 'unit_price', 'price','menuitem_id']
         read_only_fields = ['price', 'user', 'unit_price']
     
 
@@ -42,7 +43,8 @@ class CartSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 class OrderSerializer(serializers.ModelSerializer):
- 
+    menuitem=MenuItemSerializer(read_only=True)
+
     
     class Meta:
         model=Order
@@ -57,18 +59,19 @@ class OrderSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
         
 class OrderItemSerializer(serializers.ModelSerializer):
+    menuitem=MenuItemSerializer(read_only=True)
     
     class Meta:
         model=OrderItem
         fields=['id','order','menuitem','quantity','unit_price','price',]
-       
+        read_only_fields=['order']
+    def create(self,validated_data):
+        request=self.context.get('request')
+        if request and hasattr(request,'user'):
+            validated_data['order']=request.user
+        return super().create(validated_data)
     
-           
-        
-            
-        
-            
-    
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model=Group

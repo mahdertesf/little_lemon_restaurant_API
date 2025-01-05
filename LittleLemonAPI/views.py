@@ -90,43 +90,41 @@ def cartitems(request):
 @api_view(['GET','POST'])
 def orders(request):
         if request.user.groups.filter(name='Manager').exists():
-            if request.method=='GET':
-                orderitems=Order.objects.all()
-                serialized_orders=OrderSerializer(orderitems, many=True)
-                return Response(serialized_orders.data, status.HTTP_200_OK)
-            if request.method=='POST':
-                deserialized_orders=OrderSerializer(data=request.data)
-                deserialized_orders.is_valid(rasie_exception=True)
-                deserialized_orders.save()
-                return Response(deserialized_orders.data, status.HTTP_201_CREATED)
+            pass
         elif request.user.groups.filter(name='Delivery Crew').exists():
             pass
         else:
             if request.method=='POST':
-                for item in Cart.objects.filter(user=request.user):
+                carts=Cart.objects.filter(user=request.user)
+                if not carts:
+                    return Response({'message':'Cart is empty'}, status.HTTP_400_BAD_REQUEST)
+                for item in carts:
                     deserialized_item=OrderItemSerializer(data={
                         'menuitem': item.menuitem.id, 
                         'quantity': item.quantity,
                         'unit_price': item.unit_price, 
                         'price': item.price},
                         context={'request': request})
-                    deserialized_item.is_valid(raise_exception=True)
-                    try:
-                        deserialized_item.save()
-                        Cart.objects.filter(user_id=request.user.id).delete()
-                    except IntegrityError:
-                        return Response({'message':'Order already placed'}, status.HTTP_400_BAD_REQUEST)
+                    
+                    deserialized_item.is_valid(raise_exception=True)    
+                  
+                    deserialized_item.save()
+    
+                Cart.objects.filter(user_id=request.user.id).delete()
+                return Response({'message':'All Order placed'}, status.HTTP_201_CREATED)
+              
+                        
                 return Response({'message':'Order placed'}, status.HTTP_201_CREATED)
             if request.method=='GET':
-                items=OrderItem.objects.filter(order=request.user)
+                items=OrderItem.objects.filter(order__id=request.user.id)
                 serialized_orders=OrderItemSerializer(items,many=True)
                 return Response(serialized_orders.data, status.HTTP_200_OK)
             
 @api_view(['GET', 'DELETE', 'PUT', 'PATCH'])
 def orderdetail(request, pk):
     try:
-        orderitem= OrderItem.objects.filter(order=request.user, pk=pk)
-    except Order.DoesNotExist:
+        orderitem= OrderItem.objects.get(order=request.user, pk=pk)
+    except OrderItem.DoesNotExist:
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
