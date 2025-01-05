@@ -100,7 +100,9 @@ def orders(request):
                     return Response({'message':'Cart is empty'}, status.HTTP_400_BAD_REQUEST)
                 for item in carts:
                     deserialized_item=OrderItemSerializer(data={
-                        'menuitem': item.menuitem.id, 
+                     
+                        'menuitem_id': item.menuitem.id,
+                        'menuitem': item.menuitem_id, 
                         'quantity': item.quantity,
                         'unit_price': item.unit_price, 
                         'price': item.price},
@@ -108,7 +110,10 @@ def orders(request):
                     
                     deserialized_item.is_valid(raise_exception=True)    
                   
-                    deserialized_item.save()
+                    try:
+                        deserialized_item.save()
+                    except IntegrityError:
+                        return Response({'message':'Order already exists'}, status.HTTP_400_BAD_REQUEST)
     
                 Cart.objects.filter(user_id=request.user.id).delete()
                 return Response({'message':'All Order placed'}, status.HTTP_201_CREATED)
@@ -116,17 +121,16 @@ def orders(request):
                         
                 return Response({'message':'Order placed'}, status.HTTP_201_CREATED)
             if request.method=='GET':
-                items=OrderItem.objects.filter(order__id=request.user.id)
+                items=OrderItem.objects.filter(order=request.user)
                 serialized_orders=OrderItemSerializer(items,many=True)
                 return Response(serialized_orders.data, status.HTTP_200_OK)
             
 @api_view(['GET', 'DELETE', 'PUT', 'PATCH'])
 def orderdetail(request, pk):
     try:
-        orderitem= OrderItem.objects.get(order=request.user, pk=pk)
+        orderitem = OrderItem.objects.get(order=request.user, pk=pk)
     except OrderItem.DoesNotExist:
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
-
 
     if request.user.groups.filter(name='Manager').exists():
         # Add logic for Manager
@@ -136,15 +140,23 @@ def orderdetail(request, pk):
         pass
     else:
         if request.method == 'GET':
-            serialized_order = OrderItemSerializer(orderitem,context={'request': request})
+            serialized_order = OrderItemSerializer(orderitem, context={'request': request})
             return Response(serialized_order.data, status=status.HTTP_200_OK)
         elif request.method == 'DELETE':
-            order.delete()
+            orderitem.delete()
             return Response({'message': 'Order deleted'}, status=status.HTTP_200_OK)
         elif request.method in ['PUT', 'PATCH']:
-            deserialized_order = OrderSerializer(request.data)
-            deserialized_order.is_valid(raise_exception=True)
-            deserialized_order.save()
-            return Response(deserialized_order.data, status=status.HTTP_200_OK)
+            deserialized_order = OrderItemSerializer(
+                orderitem,
+                data=request.data,
+                partial=(request.method == 'PATCH'),
+                context={'request': request}
+            )
+            try:
+                deserialized_order.is_valid(raise_exception=True)
+                deserialized_order.save()
+                return Response(deserialized_order.data, status=status.HTTP_200_OK)
+            except ValidationError as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     return Response({'error': 'Unauthorized access'}, status=status.HTTP_403_FORBIDDEN)

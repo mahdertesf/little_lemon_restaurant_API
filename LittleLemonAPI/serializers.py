@@ -37,7 +37,7 @@ class CartSerializer(serializers.ModelSerializer):
             validated_data['user'] = request.user
         menuitem_id= validated_data.pop('menuitem_id')
         menuitem=MenuItems.objects.get(id=menuitem_id)
-        validated_data['menuitem']=menuitem        
+        validated_data['menuitem']=menuitem
         validated_data['unit_price'] = menuitem.price
         validated_data['price']=menuitem.price*validated_data['quantity']
         return super().create(validated_data)
@@ -60,15 +60,23 @@ class OrderSerializer(serializers.ModelSerializer):
         
 class OrderItemSerializer(serializers.ModelSerializer):
     menuitem=MenuItemSerializer(read_only=True)
+    menuitem_id=serializers.IntegerField(write_only=True)
+    
     
     class Meta:
         model=OrderItem
-        fields=['id','order','menuitem','quantity','unit_price','price',]
-        read_only_fields=['order']
+        fields=['id','order','menuitem','quantity','unit_price','price','menuitem_id']
+        read_only_fields=['order','unit_price','price','quantity',]
     def create(self,validated_data):
         request=self.context.get('request')
         if request and hasattr(request,'user'):
             validated_data['order']=request.user
+            menuitem_id= validated_data.pop('menuitem_id')
+            menuitem=MenuItems.objects.get(id=menuitem_id)
+            validated_data['menuitem']=menuitem
+            validated_data['unit_price'] = menuitem.price
+            validated_data['price']=menuitem.price*validated_data['quantity']
+          
         return super().create(validated_data)
     
 
