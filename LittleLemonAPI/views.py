@@ -107,15 +107,16 @@ def orders(request):
                         'menuitem': item.menuitem_id, 
                         'quantity': item.quantity,
                         'unit_price': item.unit_price, 
-                        'price': item.unit_price*item.quantity,},
+                        'price': item.price,},
                         context={'request': request})
                     
                     deserialized_item.is_valid(raise_exception=True)    
                   
                     try:
                         deserialized_item.save()
-                    except IntegrityError:
-                        return Response({'message':'Order already exists'}, status.HTTP_400_BAD_REQUEST)
+                    except IntegrityError as e:
+                        return Response({'message':str(e)}, status.HTTP_400_BAD_REQUEST)
+                        
                 serialized_order=OrderSerializer(data={'user':request.user.id}, context={'request':request})
                 serialized_order.is_valid(raise_exception=True)
                 try:
@@ -162,7 +163,10 @@ def orderdetail(request, pk):
             )
             try:
                 deserialized_order.is_valid(raise_exception=True)
+                
                 deserialized_order.save()
+                update_orderitem_price(orderitem)
+                
                 
                 return Response(deserialized_order.data, status=status.HTTP_200_OK)
             except ValidationError as e:
@@ -170,3 +174,14 @@ def orderdetail(request, pk):
     
     return Response({'error': 'Unauthorized access'}, status=status.HTTP_403_FORBIDDEN)
 
+
+
+        
+def update_orderitem_price(order_item):
+    order_item.price = order_item.menuitem.price * order_item.quantity
+    order_item.save()
+    
+        
+   
+    
+    
