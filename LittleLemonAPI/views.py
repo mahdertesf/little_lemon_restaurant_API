@@ -7,8 +7,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view , permission_classes
 from django.contrib.auth.models import User, Group
 from rest_framework import status
-from django.db import IntegrityError
-
+from django.db import IntegrityError 
+from rest_framework.exceptions import ValidationError
+from decimal import Decimal
 # Create your views here.
 
 class IsManager(BasePermission):
@@ -96,6 +97,7 @@ def orders(request):
         else:
             if request.method=='POST':
                 carts=Cart.objects.filter(user=request.user)
+                
                 if not carts:
                     return Response({'message':'Cart is empty'}, status.HTTP_400_BAD_REQUEST)
                 for item in carts:
@@ -105,7 +107,7 @@ def orders(request):
                         'menuitem': item.menuitem_id, 
                         'quantity': item.quantity,
                         'unit_price': item.unit_price, 
-                        'price': item.price},
+                        'price': item.unit_price*item.quantity,},
                         context={'request': request})
                     
                     deserialized_item.is_valid(raise_exception=True)    
@@ -114,10 +116,15 @@ def orders(request):
                         deserialized_item.save()
                     except IntegrityError:
                         return Response({'message':'Order already exists'}, status.HTTP_400_BAD_REQUEST)
-    
+                serialized_order=OrderSerializer(data={'user':request.user.id}, context={'request':request})
+                serialized_order.is_valid(raise_exception=True)
+                try:
+                    serialized_order.save()
+                except IntegrityError:
+                    return Response({'message':'Order already exists'}, status.HTTP_400_BAD_REQUEST)
+                
                 Cart.objects.filter(user_id=request.user.id).delete()
-                return Response({'message':'All Order placed'}, status.HTTP_201_CREATED)
-              
+                
                         
                 return Response({'message':'Order placed'}, status.HTTP_201_CREATED)
             if request.method=='GET':
@@ -144,6 +151,7 @@ def orderdetail(request, pk):
             return Response(serialized_order.data, status=status.HTTP_200_OK)
         elif request.method == 'DELETE':
             orderitem.delete()
+           
             return Response({'message': 'Order deleted'}, status=status.HTTP_200_OK)
         elif request.method in ['PUT', 'PATCH']:
             deserialized_order = OrderItemSerializer(
@@ -155,8 +163,10 @@ def orderdetail(request, pk):
             try:
                 deserialized_order.is_valid(raise_exception=True)
                 deserialized_order.save()
+                
                 return Response(deserialized_order.data, status=status.HTTP_200_OK)
             except ValidationError as e:
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     return Response({'error': 'Unauthorized access'}, status=status.HTTP_403_FORBIDDEN)
+

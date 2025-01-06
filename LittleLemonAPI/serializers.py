@@ -43,7 +43,7 @@ class CartSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 class OrderSerializer(serializers.ModelSerializer):
-    menuitem=MenuItemSerializer(read_only=True)
+   
 
     
     class Meta:
@@ -66,7 +66,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model=OrderItem
         fields=['id','order','menuitem','quantity','unit_price','price','menuitem_id']
-        read_only_fields=['order','unit_price','price','quantity',]
+        read_only_fields=['order','unit_price','price']
     def create(self,validated_data):
         request=self.context.get('request')
         if request and hasattr(request,'user'):
@@ -75,7 +75,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             menuitem=MenuItems.objects.get(id=menuitem_id)
             validated_data['menuitem']=menuitem
             validated_data['unit_price'] = menuitem.price
-            validated_data['price']=menuitem.price*validated_data['quantity']
+            
           
         return super().create(validated_data)
     
