@@ -164,8 +164,10 @@ def orderdetail(request, pk):
             try:
                 deserialized_order.is_valid(raise_exception=True)
                 
+                
                 deserialized_order.save()
                 update_orderitem_price(orderitem)
+               
                 
                 
                 return Response(deserialized_order.data, status=status.HTTP_200_OK)
@@ -179,6 +181,7 @@ def orderdetail(request, pk):
         
 def update_orderitem_price(order_item):
     order_item.price = order_item.menuitem.price * order_item.quantity
+    order_item.unit_price = order_item.menuitem.price
     order_item.save()
     
         
