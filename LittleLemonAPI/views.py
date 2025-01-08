@@ -91,7 +91,10 @@ def cartitems(request):
 @api_view(['GET','POST'])
 def orders(request):
         if request.user.groups.filter(name='Manager').exists():
-            pass
+            if request.method=='GET':
+                orders=OrderItem.objects.all()
+                serialized_orders=OrderItemSerilizer(orders,many=True)
+                return Response(serialized_orders.data, status.HTTP_200_OK)
         elif request.user.groups.filter(name='Delivery Crew').exists():
             pass
         else:
@@ -100,11 +103,19 @@ def orders(request):
                 
                 if not carts:
                     return Response({'message':'Cart is empty'}, status.HTTP_400_BAD_REQUEST)
+                serialized_order=OrderSerializer(data={'user':request.user.id}, context={'request':request})
+                serialized_order.is_valid(raise_exception=True)
+                
+                try:
+                    order=serialized_order.save()
+                    order_id=order.id
+                except IntegrityError:
+                    return Response({'message':'Order already exists'}, status.HTTP_400_BAD_REQUEST)
                 for item in carts:
                     deserialized_item=OrderItemSerializer(data={
-                     
-                        'menuitem_id': item.menuitem.id,
-                        'menuitem': item.menuitem_id, 
+                        'order':order_id,                     
+                        'menuitem_id': item.menuitem_id,
+                        'menuitem': item.menuitem, 
                         'quantity': item.quantity,
                         'unit_price': item.unit_price, 
                         'price': item.price,},
@@ -117,19 +128,14 @@ def orders(request):
                     except IntegrityError as e:
                         return Response({'message':str(e)}, status.HTTP_400_BAD_REQUEST)
                         
-                serialized_order=OrderSerializer(data={'user':request.user.id}, context={'request':request})
-                serialized_order.is_valid(raise_exception=True)
-                try:
-                    serialized_order.save()
-                except IntegrityError:
-                    return Response({'message':'Order already exists'}, status.HTTP_400_BAD_REQUEST)
+                
                 
                 Cart.objects.filter(user_id=request.user.id).delete()
                 
                         
                 return Response({'message':'Order placed'}, status.HTTP_201_CREATED)
             if request.method=='GET':
-                items=OrderItem.objects.filter(order=request.user)
+                items=OrderItem.objects.filter(order__user=request.user)
                 serialized_orders=OrderItemSerializer(items,many=True)
                 return Response(serialized_orders.data, status.HTTP_200_OK)
             

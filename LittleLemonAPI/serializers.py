@@ -57,6 +57,7 @@ class OrderSerializer(serializers.ModelSerializer):
         validated_data['total']=Cart.objects.filter(user=request.user).aggregate(total=models.Sum('price'))['total']
         validated_data['date']=timezone.now().date()
         return super().create(validated_data)
+    
         
 class OrderItemSerializer(serializers.ModelSerializer):
     menuitem=MenuItemSerializer(read_only=True)
@@ -66,12 +67,12 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model=OrderItem
         fields=['id','order','menuitem','quantity','unit_price','price','menuitem_id']
-        read_only_fields=['order','unit_price','price']
+        read_only_fields=['unit_price','price']
+        
 
     def create(self,validated_data):
         request=self.context.get('request')
         if request and hasattr(request,'user'):
-            validated_data['order']=request.user
             menuitem_id= validated_data.pop('menuitem_id')
             menuitem=MenuItems.objects.get(id=menuitem_id)
             validated_data['menuitem']=menuitem
